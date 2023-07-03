@@ -1,44 +1,76 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client";
+import { withLDProvider } from "launchdarkly-react-client-sdk";
+import { useFlags } from "launchdarkly-react-client-sdk";
+import { useState, useEffect } from "react";
+import styles from "./page.module.css";
 
-export default function Home() {
+const contexts = [
+  {
+    kind: "vehicle",
+    key: "4Y1SL65848Z411001",
+    brand: "Chrysler",
+    model: "Voyager",
+    region: "APAC",
+  },
+  {
+    kind: "vehicle",
+    key: "4Y1SL65848Z411002",
+    brand: "Jeep",
+    model: "Grand Cherokee",
+    region: "Europe",
+  },
+  {
+    kind: "vehicle",
+    key: "4Y1SL65848Z411003",
+    brand: "Chrysler",
+    model: "300",
+    region: "NA",
+  },
+  {
+    kind: "vehicle",
+    key: "4Y1SL65848Z411004",
+    brand: "Fiat",
+    model: "Panda",
+    region: "APAC",
+  },
+  {
+    kind: "vehicle",
+    key: "4Y1SL65848Z411005",
+    brand: "Jeep",
+    model: "Wrangler",
+    region: "NA",
+  },
+];
+
+const defaultContext = {
+  clientSideID: "",
+  context: contexts[Math.floor(Math.random() * 5)],
+  options: {
+    bootstrap: "localStorage",
+  },
+  reactOptions: {
+    useCamelCaseFlagKeys: true,
+  },
+};
+
+function Home() {
+  const [footer, setFooter] = useState("");
+
+  // get the flag variation
+  // client.variation('enablePayable', 0);
+  const { enablePayable } = useFlags();
+
+  // use the flag value
+  const amountPayable = format(enablePayable);
+
+  useEffect(() => {
+    setFooter(
+      `Region: ${defaultContext.context.region}, brand: ${defaultContext.context.brand}`
+    );
+  });
+
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
       <div className={styles.grid}>
         <a
           href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
@@ -46,10 +78,8 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
+          <h2>Solitaire</h2>
+          <p>Play Solitaire for {amountPayable}.</p>
         </a>
 
         <a
@@ -58,10 +88,8 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
+          <h2>Memory</h2>
+          <p>Play Memory for {amountPayable}.</p>
         </a>
 
         <a
@@ -70,10 +98,8 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
+          <h2>Snake</h2>
+          <p>Play Snake for {amountPayable}.</p>
         </a>
 
         <a
@@ -82,14 +108,27 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
+          <h2>Minesweeper</h2>
+          <p>Play Minesweeper for {amountPayable}.</p>
         </a>
       </div>
+      <p>{footer}</p>
     </main>
-  )
+  );
 }
+
+function WithLDProviderContent({ children, context = defaultContext }) {
+  context.clientSideID = "<CLIENT_SIDE_ID>";
+  const Provider = withLDProvider(context)(Home);
+  return <Provider>{children}</Provider>;
+}
+
+function format(amount) {
+  if ((amount === 0)) return "free";
+  return (amount / 100).toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+  });
+}
+
+export default WithLDProviderContent;
