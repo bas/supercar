@@ -118,7 +118,7 @@ function Home() {
 }
 
 function WithLDProviderContent({ children, context = defaultContext }) {
-  context.clientSideID = "<CLIENT_SIDE_ID>";
+  context.clientSideID = process.env.clientSideID;
   const Provider = withLDProvider(context)(Home);
   return <Provider>{children}</Provider>;
 }
